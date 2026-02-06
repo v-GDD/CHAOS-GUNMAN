@@ -15,7 +15,7 @@
 // modeldata.hが存在する場合
 #if __has_include("modeldata.h")
 #include "modeldata.h"
-#define MODELDATA_DEFINED
+#define MODELDATA_INCLUDED
 #endif
 
 //**********************************************************************************
@@ -32,6 +32,11 @@
 #define VEC_Z(z)				D3DXVECTOR3(0.0f, 0.0f, z)		// Zのみ変更
 #define InitRot(x, y, z)		RepairedRot(D3DXVECTOR3(x, y, z))	// 修正済み角度
 #define DEF_COL					D3DXCOLOR_NULL					// デフォルトカラー
+
+//----------------------------------------------------------------------------------
+/*** フラグ関連 ***/
+		
+//----------------------------------------------------------------------------------
 
 namespace MyMathUtil
 {
@@ -107,66 +112,85 @@ namespace MyMathUtil
 
 	//----------------------------------------------------------------------------------
 	/*** 描画関連 ***/
-	void DrawPolygon(LPDIRECT3DDEVICE9 pDevice,
-		LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
-		LPDIRECT3DTEXTURE9 pTexture,
-		UINT VertexFormatSize,
-		DWORD FVF,
-		int nNumPolygon,
-		UINT OffSet = 0);
+	void DrawPolygon(_In_ LPDIRECT3DDEVICE9 pDevice,
+		_In_ LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
+		_In_opt_ LPDIRECT3DTEXTURE9 pTexture,
+		_In_ UINT VertexFormatSize,
+		_In_ DWORD FVF,
+		_In_ int nNumPolygon,
+		_In_opt_ UINT OffSet = NULL);
 
-	void DrawPolygonTextureArray(LPDIRECT3DDEVICE9 pDevice,
-		LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
-		LPDIRECT3DTEXTURE9* pTexture,
-		UINT nNumTexture,
-		int* pArrayTexNo,
-		UINT VertexFormatSize,
-		DWORD FVF,
-		int nNumPolygon,
-		UINT OffSet = 0);
+	void DrawPolygonTextureArray(_In_ LPDIRECT3DDEVICE9 pDevice,
+		_In_ LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
+		_In_ LPDIRECT3DTEXTURE9 *pTexture,
+		_In_ UINT nNumTexture,
+		_In_ const int *pArrayTexNo,
+		_In_ UINT VertexFormatSize,
+		_In_ DWORD FVF,
+		_In_ int nNumPolygon,
+		_In_opt_ UINT OffSet = NULL);
 
-	void DrawPolygonTextureFromIndex(LPDIRECT3DDEVICE9 pDevice,
-		LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
-		int nIdxTexture,
-		UINT VertexFormatSize,
-		DWORD FVF,
-		int nNumPolygon,
-		UINT OffSet = 0);
+	void DrawPolygonTextureFromIndex(_In_ LPDIRECT3DDEVICE9 pDevice,
+		_In_ LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
+		_In_ int nIdxTexture,
+		_In_ UINT VertexFormatSize,
+		_In_ DWORD FVF,
+		_In_ int nNumPolygon,
+		_In_opt_ UINT OffSet = NULL);
 
-	void Draw3DModelFromXFile(LPDIRECT3DDEVICE9 pDevice,
-		D3DXMATERIAL *pMat,
-		DWORD dwNumMat,
-		LPDIRECT3DTEXTURE9 *ppTexture,
-		LPD3DXMESH pMesh);
+#pragma push_macro("NULL")
+#undef NULL
+#define NULL nullptr
 
-#ifdef MODELDATA_DEFINED
-	void Draw3DModelFromModelData(LPDIRECT3DDEVICE9 pDevice,
-		LPMODELDATA pModelData);
+	void Draw3DModelFromXFile(_In_ LPDIRECT3DDEVICE9 pDevice,
+		_In_ const D3DXMATERIAL *pMat,
+		_In_ DWORD dwNumMat,
+		_In_ LPDIRECT3DTEXTURE9 *ppTexture,
+		_In_ LPD3DXMESH pMesh,
+		_In_ const D3DXMATRIX *pMtxWorld,
+		_In_opt_ const D3DXMATRIX *pMtxShadow = NULL);
+
+#ifdef MODELDATA_INCLUDED
+	void Draw3DModelFromModelData(_In_ LPDIRECT3DDEVICE9 pDevice,
+		_In_ const MODELDATA *pModelData,
+		_In_ const D3DXMATRIX *pMtxWorld,
+		_In_opt_ const D3DXMATRIX *pMtxShadow = NULL);
 #endif
+#pragma pop_macro("NULL")
 
-	void CalcWorldMatrix(LPDIRECT3DDEVICE9 pDevice,
-		D3DXMATRIX* mtxWorld,
-		D3DXVECTOR3 pos,
-		D3DXVECTOR3 rot,
-		bool bSetTransform);
+	void CalcWorldMatrix(_Inout_ D3DXMATRIX *pMtxWorld,
+		_In_ D3DXVECTOR3 pos,
+		_In_ D3DXVECTOR3 rot);
 
-	void CalcWorldMatrixFromParent(LPDIRECT3DDEVICE9 pDevice,
-		D3DXMATRIX* mtxWorld,
-		D3DXMATRIX* mtxParent,
-		D3DXVECTOR3 pos,
-		D3DXVECTOR3 rot,
-		bool bSetTransform);
+	void CalcWorldMatrixFromParent(_Inout_ D3DXMATRIX *pMtxWorld,
+		_In_ const D3DXMATRIX *pMtxParent,
+		_In_ D3DXVECTOR3 pos,
+		_In_ D3DXVECTOR3 rot);
 
-	void CreateShadowMatrix(LPDIRECT3DDEVICE9 pDevice, D3DXMATRIX* pIn, D3DXMATRIX* pOut);
-	void SetEnableZFunction(LPDIRECT3DDEVICE9 pDevice, bool bEnable);
+	void CreateShadowMatrix(_In_ LPDIRECT3DDEVICE9 pDevice,
+		_In_ const D3DXMATRIX* pIn, 
+		_In_ D3DXVECTOR3 pos,
+		_In_ D3DXVECTOR3 nor,
+		_In_ UINT nIdxLight,
+		_Out_ D3DXMATRIX *pOut);
+
+	void SetEnableZFunction(_In_ LPDIRECT3DDEVICE9 pDevice,
+		_In_ bool bEnable);
+
+	void SetUpPixelFog(_In_ D3DXCOLOR Col,
+		_In_ float fStart,
+		_In_ float fEnd);
+
+	void CleanUpPixelFog(void);
 	//----------------------------------------------------------------------------------
 
 	//----------------------------------------------------------------------------------
 	/*** システム関連 ***/
-	HRESULT CheckIndex(int TargetIndexMax, int Index, int TargetIndexMin = 0);
+	HRESULT CheckIndex(int TargetIndexMax, int Index, int TargetIndexMin = NULL);
 	bool CheckPath(_In_ const char* pFileName);
 	void UniteChar(char* pOut, const char* fmt, ...);
 	int GenerateMessageBox(_In_ UINT nType, _In_ const char* pCaption, _In_ const char* fmt, ...);
 	//----------------------------------------------------------------------------------
 }
+
 #endif
