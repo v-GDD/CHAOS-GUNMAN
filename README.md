@@ -8,5 +8,5 @@ None. Update's infos are written in this space if CHAOS-GUNMAN is Updated.
 This game is 3D Multi Shooting Game.
 
 # <<< Rules >>>
-Thing over...
+Thinking over now...
 Wait for written.
