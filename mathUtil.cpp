@@ -584,7 +584,7 @@ void MyMathUtil::UniteChar(char* pOut, const char* fmt, ...)
 
 			case 'f':
 
-				f = va_arg(ap, double);
+				f = (float)va_arg(ap, double);
 				nc += sprintf(&aStr[0], "%f", f);
 
 				/*** 文字列を結合 ***/
@@ -784,7 +784,7 @@ int MyMathUtil::GenerateMessageBox(_In_ UINT nType, _In_ const char* pCaption, _
 
 			case 'f':
 
-				f = va_arg(ap, double);
+				f = (float)va_arg(ap, double);
 				nc += sprintf(&aStr[0], "%f", f);
 
 				/*** 文字列を結合 ***/
@@ -852,7 +852,7 @@ int MyMathUtil::GenerateMessageBox(_In_ UINT nType, _In_ const char* pCaption, _
 					{
 						memset(aStr, 0, sizeof aStr);
 
-						f = va_arg(ap, double);
+						f = (float)va_arg(ap, double);
 						nc += sprintf(&aStr[0], "%f ", f);
 
 						/*** 文字列を結合 ***/
@@ -977,13 +977,13 @@ D3DXCOLOR MyMathUtil::GetColLerp(D3DXCOLOR Start, D3DXCOLOR End, float s)
 //==================================================================================
 // --- ポリゴン描画(テクスチャバッファ使用) ---
 //==================================================================================
-void MyMathUtil::DrawPolygon(LPDIRECT3DDEVICE9 pDevice,
-	LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
-	LPDIRECT3DTEXTURE9 pTexture,
-	UINT VertexFormatSize,
-	DWORD FVF,
-	int nNumPolygon,
-	UINT OffSet)
+void MyMathUtil::DrawPolygon(_In_ const LPDIRECT3DDEVICE9 pDevice,
+	_In_ const LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
+	_In_opt_ const LPDIRECT3DTEXTURE9 pTexture,
+	_In_ UINT VertexFormatSize,
+	_In_ DWORD FVF,
+	_In_ int nNumPolygon,
+	_In_opt_ UINT OffSet)
 {
 	// NULLCHECK
 	if (pDevice == nullptr)
@@ -1020,15 +1020,15 @@ void MyMathUtil::DrawPolygon(LPDIRECT3DDEVICE9 pDevice,
 //==================================================================================
 // --- ポリゴン描画(配列テクスチャバッファ使用) ---
 //==================================================================================
-void MyMathUtil::DrawPolygonTextureArray(LPDIRECT3DDEVICE9 pDevice,
-	LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
-	LPDIRECT3DTEXTURE9* pTexture,
-	UINT nNumTexture,
-	int* pArrayTexNo,
-	UINT VertexFormatSize,
-	DWORD FVF,
-	int nNumPolygon,
-	UINT OffSet)
+void MyMathUtil::DrawPolygonTextureArray(_In_ LPDIRECT3DDEVICE9 pDevice,
+	_In_ LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
+	_In_ LPDIRECT3DTEXTURE9* pTexture,
+	_In_ UINT nNumTexture,
+	_In_ const int* pArrayTexNo,
+	_In_ UINT VertexFormatSize,
+	_In_ DWORD FVF,
+	_In_ int nNumPolygon,
+	_In_opt_ UINT OffSet)
 {
 	// NULLCHECK
 	if (pDevice == nullptr)
@@ -1072,13 +1072,13 @@ void MyMathUtil::DrawPolygonTextureArray(LPDIRECT3DDEVICE9 pDevice,
 //==================================================================================
 // --- ポリゴン描画(GetTexture使用) ---
 //==================================================================================
-void MyMathUtil::DrawPolygonTextureFromIndex(LPDIRECT3DDEVICE9 pDevice,
-	LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
-	int nIdxTexture,
-	UINT VertexFormatSize,
-	DWORD FVF,
-	int nNumPolygon,
-	UINT OffSet)
+void MyMathUtil::DrawPolygonTextureFromIndex(_In_ LPDIRECT3DDEVICE9 pDevice,
+	_In_ LPDIRECT3DVERTEXBUFFER9 pVtxBuff,
+	_In_ int nIdxTexture,
+	_In_ UINT VertexFormatSize,
+	_In_ DWORD FVF,
+	_In_ int nNumPolygon,
+	_In_opt_ UINT OffSet)
 {
 	// NULLCHECK
 	if (pDevice == nullptr)
@@ -1115,11 +1115,13 @@ void MyMathUtil::DrawPolygonTextureFromIndex(LPDIRECT3DDEVICE9 pDevice,
 //==================================================================================
 // --- モデル描画 ---
 //==================================================================================
-void MyMathUtil::Draw3DModelFromXFile(LPDIRECT3DDEVICE9 pDevice,
-	D3DXMATERIAL *pMat,
-	DWORD dwNumMat,
-	LPDIRECT3DTEXTURE9 *ppTexture,
-	LPD3DXMESH pMesh)
+void MyMathUtil::Draw3DModelFromXFile(_In_ LPDIRECT3DDEVICE9 pDevice,
+	_In_ const D3DXMATERIAL *pMat,
+	_In_ DWORD dwNumMat,
+	_In_ LPDIRECT3DTEXTURE9* ppTexture,
+	_In_ LPD3DXMESH pMesh,
+	_In_ const D3DXMATRIX *pMtxWorld,
+	_In_opt_ const D3DXMATRIX *pMtxShadow)
 {
 	// NULLCHECK
 	if (pDevice == nullptr)
@@ -1149,10 +1151,28 @@ void MyMathUtil::Draw3DModelFromXFile(LPDIRECT3DDEVICE9 pDevice,
 		return;
 	}
 
-	for (int nCntMat = 0; nCntMat < dwNumMat; nCntMat++)
+	if (pMtxShadow != nullptr)
+	{ // シャドウマトリックスが付与されていた場合、影に設定
+		/*** ワールドマトリックスの設定 ***/
+		pDevice->SetTransform(D3DTS_WORLD, pMtxShadow);
+	}
+	else
 	{
+		/*** ワールドマトリックスの設定 ***/
+		pDevice->SetTransform(D3DTS_WORLD, pMtxWorld);
+	}
+
+	for (int nCntMat = 0; nCntMat < (int)dwNumMat; nCntMat++)
+	{
+		D3DMATERIAL9 shadowMat = pMat[nCntMat].MatD3D;
+
+		if (pMtxShadow != nullptr)
+		{ // シャドウマトリックスが付与されていた場合、影に設定
+			shadowMat.Diffuse = { 0, 0, 0, 1 };
+		}
+
 		/*** マテリアルの設定 ***/
-		pDevice->SetMaterial(&pMat[nCntMat].MatD3D);
+		pDevice->SetMaterial(&shadowMat);
 
 		/*** テクスチャの設定 ***/
 		pDevice->SetTexture(0, ppTexture[nCntMat]);
@@ -1165,9 +1185,11 @@ void MyMathUtil::Draw3DModelFromXFile(LPDIRECT3DDEVICE9 pDevice,
 //==================================================================================
 // --- モデル描画(ModelData使用) ---
 //==================================================================================
-#ifdef MODELDATA_DEFINED
-void MyMathUtil::Draw3DModelFromModelData(LPDIRECT3DDEVICE9 pDevice,
-	LPMODELDATA pModelData)
+#ifdef MODELDATA_INCLUDED
+void MyMathUtil::Draw3DModelFromModelData(_In_ LPDIRECT3DDEVICE9 pDevice,
+	_In_ const MODELDATA *pModelData,
+	_In_ const D3DXMATRIX *pMtxWorld,
+	_In_opt_ const D3DXMATRIX *pMtxShadow)
 {
 	// NULLCHECK
 	if (pDevice == nullptr)
@@ -1183,6 +1205,17 @@ void MyMathUtil::Draw3DModelFromModelData(LPDIRECT3DDEVICE9 pDevice,
 		return;
 	}
 
+	if (pMtxShadow != nullptr)
+	{ // シャドウマトリックスが付与されていた場合、影に設定
+		/*** ワールドマトリックスの設定 ***/
+		pDevice->SetTransform(D3DTS_WORLD, pMtxShadow);
+	}
+	else
+	{
+		/*** ワールドマトリックスの設定 ***/
+		pDevice->SetTransform(D3DTS_WORLD, pMtxWorld);
+	}
+
 	D3DMATERIAL9 matDef;				// 現在のマテリアル保存用
 	D3DXMATERIAL* pMat;					// マテリアルデータへのポインタ
 
@@ -1194,6 +1227,13 @@ void MyMathUtil::Draw3DModelFromModelData(LPDIRECT3DDEVICE9 pDevice,
 
 	for (int nCntMat = 0; nCntMat < (int)pModelData->dwNumMat; nCntMat++)
 	{
+		D3DMATERIAL9 shadowMat = pMat[nCntMat].MatD3D;
+
+		if (pMtxShadow != nullptr)
+		{ // シャドウマトリックスが付与されていた場合、影に設定
+			shadowMat.Diffuse = { 0, 0, 0, 1 };
+		}
+
 		/*** マテリアルの設定 ***/
 		pDevice->SetMaterial(&pMat[nCntMat].MatD3D);
 
@@ -1212,16 +1252,14 @@ void MyMathUtil::Draw3DModelFromModelData(LPDIRECT3DDEVICE9 pDevice,
 //==================================================================================
 // --- マトリックス計算 ---
 //==================================================================================
-void MyMathUtil::CalcWorldMatrix(LPDIRECT3DDEVICE9 pDevice,
-	D3DXMATRIX* mtxWorld,
-	D3DXVECTOR3 pos,
-	D3DXVECTOR3 rot,
-	bool bSetTransform)
+void MyMathUtil::CalcWorldMatrix(_Inout_ D3DXMATRIX *pMtxWorld,
+	_In_ D3DXVECTOR3 pos,
+	_In_ D3DXVECTOR3 rot)
 {
 	D3DXMATRIX mtxRot, mtxTrans;		// 計算用マトリックス
 
 	/*** ワールドマトリックスの初期化 ***/
-	D3DXMatrixIdentity(mtxWorld);
+	D3DXMatrixIdentity(pMtxWorld);
 
 	/*** 向きを反映 (※ 位置を反映する前に必ず行うこと！) ***/
 	D3DXMatrixRotationYawPitchRoll(&mtxRot,
@@ -1229,7 +1267,7 @@ void MyMathUtil::CalcWorldMatrix(LPDIRECT3DDEVICE9 pDevice,
 		rot.x,			// X軸回転
 		rot.z);			// Z軸回転
 
-	D3DXMatrixMultiply(mtxWorld, mtxWorld, &mtxRot);
+	D3DXMatrixMultiply(pMtxWorld, pMtxWorld, &mtxRot);
 
 	/*** 位置を反映 (※ 向きを反映したのちに行うこと！) ***/
 	D3DXMatrixTranslation(&mtxTrans,
@@ -1237,37 +1275,21 @@ void MyMathUtil::CalcWorldMatrix(LPDIRECT3DDEVICE9 pDevice,
 		pos.y,
 		pos.z);
 
-	D3DXMatrixMultiply(mtxWorld, mtxWorld, &mtxTrans);
-
-	// ワールドマトリックスの適用をする場合
-	if (bSetTransform)
-	{
-		// 各NULLCHECK
-		if (pDevice == nullptr)
-		{
-			OutputDebugString(TEXT("pDeviceが設定されていませんよ！"));
-			return;
-		}
-
-		/*** ワールドマトリックスの設定 ***/
-		pDevice->SetTransform(D3DTS_WORLD, mtxWorld);
-	}
+	D3DXMatrixMultiply(pMtxWorld, pMtxWorld, &mtxTrans);
 }
 
 //==================================================================================
 // --- マトリックス計算 (親マトリックス使用) ---
 //==================================================================================
-void MyMathUtil::CalcWorldMatrixFromParent(LPDIRECT3DDEVICE9 pDevice,
-	D3DXMATRIX* mtxWorld,
-	D3DXMATRIX* mtxParent,
-	D3DXVECTOR3 pos,
-	D3DXVECTOR3 rot,
-	bool bSetTransform)
+void MyMathUtil::CalcWorldMatrixFromParent(_Inout_ D3DXMATRIX *pMtxWorld,
+	_In_ const D3DXMATRIX *pMtxParent,
+	_In_ D3DXVECTOR3 pos,
+	_In_ D3DXVECTOR3 rot)
 {
 	D3DXMATRIX mtxRot, mtxTrans;	// 計算用マトリックス
 
 	// パーツのワールドマトリックス初期化
-	D3DXMatrixIdentity(mtxWorld);
+	D3DXMatrixIdentity(pMtxWorld);
 
 	// パーツの向きを反映
 	D3DXMatrixRotationYawPitchRoll(&mtxRot,
@@ -1276,8 +1298,8 @@ void MyMathUtil::CalcWorldMatrixFromParent(LPDIRECT3DDEVICE9 pDevice,
 		rot.z);
 
 	// かけ合わせる
-	D3DXMatrixMultiply(mtxWorld,
-		mtxWorld,
+	D3DXMatrixMultiply(pMtxWorld,
+		pMtxWorld,
 		&mtxRot);
 
 	// パーツの位置(オフセット)を反映
@@ -1287,34 +1309,25 @@ void MyMathUtil::CalcWorldMatrixFromParent(LPDIRECT3DDEVICE9 pDevice,
 		pos.z);
 
 	// かけ合わせる
-	D3DXMatrixMultiply(mtxWorld,
-		mtxWorld,
+	D3DXMatrixMultiply(pMtxWorld,
+		pMtxWorld,
 		&mtxTrans);
 
 	// 算出した「パーツのワールドマトリックス」と「親のマトリックス」をかけ合わせる
-	D3DXMatrixMultiply(mtxWorld,
-		mtxWorld,
-		mtxParent);
-
-	// ワールドマトリックスの適用をする場合
-	if (bSetTransform)
-	{
-		// 各NULLCHECK
-		if (pDevice == nullptr)
-		{
-			OutputDebugString(TEXT("pDeviceが設定されていませんよ！"));
-			return;
-		}
-
-		/*** ワールドマトリックスの設定 ***/
-		pDevice->SetTransform(D3DTS_WORLD, mtxWorld);
-	}
+	D3DXMatrixMultiply(pMtxWorld,
+		pMtxWorld,
+		pMtxParent);
 }
 
 //==================================================================================
 // ---シャドウマトリックスの作成処理 ---
 //==================================================================================
-void MyMathUtil::CreateShadowMatrix(LPDIRECT3DDEVICE9 pDevice, D3DXMATRIX *pIn, D3DXMATRIX *pOut)
+void MyMathUtil::CreateShadowMatrix(_In_ LPDIRECT3DDEVICE9 pDevice, 
+	_In_ const D3DXMATRIX *pIn,
+	_In_ D3DXVECTOR3 pos,
+	_In_ D3DXVECTOR3 nor,
+	_In_ UINT nIdxLight,
+	_Out_ D3DXMATRIX *pOut)
 {
 	// 各NULLCHECK
 	if (pDevice == nullptr)
@@ -1325,7 +1338,7 @@ void MyMathUtil::CreateShadowMatrix(LPDIRECT3DDEVICE9 pDevice, D3DXMATRIX *pIn, 
 
 	if (pIn == nullptr)
 	{
-		OutputDebugString(TEXT("pMtxが設定されていませんよ！"));
+		OutputDebugString(TEXT("pInが設定されていませんよ！"));
 		return;
 	}
 
@@ -1336,18 +1349,14 @@ void MyMathUtil::CreateShadowMatrix(LPDIRECT3DDEVICE9 pDevice, D3DXMATRIX *pIn, 
 	}
 
 	D3DLIGHT9 light;
-	D3DXVECTOR3 pos, nor;
 	D3DXVECTOR4 LightPos;
 	D3DXPLANE plane;
 
 	// ライトの位置を設定
-	pDevice->GetLight(0, &light);
+	pDevice->GetLight(nIdxLight, &light);
 	LightPos = D3DXVECTOR4(-light.Direction.x, -light.Direction.y, -light.Direction.z, 0.0f);
 
 	// 平面作成
-	pos = D3DXVECTOR3(0, 100, 0);
-	nor = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
-
 	D3DXPlaneFromPointNormal(&plane, &pos, &nor);
 
 	// シャドウマトリックスの初期化
@@ -1361,7 +1370,7 @@ void MyMathUtil::CreateShadowMatrix(LPDIRECT3DDEVICE9 pDevice, D3DXMATRIX *pIn, 
 //==================================================================================
 // --- Zテストの設定 ---
 //==================================================================================
-void MyMathUtil::SetEnableZFunction(LPDIRECT3DDEVICE9 pDevice, bool bEnable)
+void MyMathUtil::SetEnableZFunction(_In_ LPDIRECT3DDEVICE9 pDevice, _In_ bool bEnable)
 {
 	// 各NULLCHECK
 	if (pDevice == nullptr)
@@ -1382,4 +1391,36 @@ void MyMathUtil::SetEnableZFunction(LPDIRECT3DDEVICE9 pDevice, bool bEnable)
 		pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 		pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
 	}
+}
+
+//==================================================================================
+// --- フォグの設定 ---
+//==================================================================================
+void MyMathUtil::SetUpPixelFog(_In_ D3DXCOLOR Col,
+	_In_ float fStart,
+	_In_ float fEnd)
+{
+	LPDIRECT3DDEVICE9 pDevice = GetDevice();
+
+	// Enable fog blending.
+	pDevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
+
+	// Set the fog color.
+	pDevice->SetRenderState(D3DRS_FOGCOLOR, Col);
+
+	// Set fog parameters.
+	pDevice->SetRenderState(D3DRS_FOGTABLEMODE, D3DFOG_LINEAR);
+	pDevice->SetRenderState(D3DRS_FOGSTART, (DWORD)(&fStart));
+	pDevice->SetRenderState(D3DRS_FOGEND, (DWORD)(&fEnd));
+}
+
+//==================================================================================
+// --- フォグの終了 ---
+//==================================================================================
+void MyMathUtil::CleanUpPixelFog(void)
+{
+	LPDIRECT3DDEVICE9 pDevice = GetDevice();
+
+	// Enable fog blending.
+	pDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
 }

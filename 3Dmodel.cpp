@@ -67,16 +67,16 @@ void Draw3DModel(void)
 		if (p3DModel->bUse != false)
 		{ // もし使われていれば
 			// マトリックスを計算
-			CalcWorldMatrix(pDevice,
-				&p3DModel->mtxWorld,
+			CalcWorldMatrix(&p3DModel->mtxWorld,
 				p3DModel->pos,
-				p3DModel->rot,
-				true);
+				p3DModel->rot);
 
 			// モデルデータを取得
 			LPMODELDATA pModelData = GetModelData(p3DModel->nIdx3Dmodel);
 			Draw3DModelFromModelData(pDevice,
-				pModelData);
+				pModelData,
+				&p3DModel->mtxWorld,
+				nullptr);
 		}
 	}
 
