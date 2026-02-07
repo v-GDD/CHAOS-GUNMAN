@@ -66,17 +66,32 @@ void Draw3DModel(void)
 	{
 		if (p3DModel->bUse != false)
 		{ // もし使われていれば
-			// マトリックスを計算
-			CalcWorldMatrix(&p3DModel->mtxWorld,
-				p3DModel->pos,
-				p3DModel->rot);
+			D3DXMATRIX mtxShadow;		// 影のマトリックス
 
 			// モデルデータを取得
 			LPMODELDATA pModelData = GetModelData(p3DModel->nIdx3Dmodel);
+
+			// 描画
 			Draw3DModelFromModelData(pDevice,
 				pModelData,
-				&p3DModel->mtxWorld,
-				nullptr);
+				CalcWorldMatrix(&p3DModel->mtxWorld, p3DModel->pos, p3DModel->rot),		// マトリックスを計算
+				nullptr);		// 影の未使用
+
+#if FALSE
+			// modeldataを使用しない描画
+			Draw3DModelFromXFile(pDevice,
+				(D3DXMATERIAL*)pModelData->pBuffMat->GetBufferPointer(),
+				pModelData->dwNumMat,
+				&pModelData->apTexture[0],
+				pModelData->pMesh,
+				CalcWorldMatrix(&p3DModel->mtxWorld, p3DModel->pos, p3DModel->rot));
+#endif
+
+			// 描画
+			Draw3DModelFromModelData(pDevice,
+				pModelData,
+				&p3DModel->mtxWorld,		// マトリックスを計算
+				CreateShadowMatrix(pDevice, &p3DModel->mtxWorld, VECNULL, VEC_Y(1.0f), 0, &mtxShadow));		// 影の作成計算
 		}
 	}
 

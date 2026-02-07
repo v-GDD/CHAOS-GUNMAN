@@ -66,6 +66,11 @@ void InitBackGroundManager(void)
 	// スクリーン全体に表示
 	MyMathUtil::SetFullScreenPolygon(pVtx);
 
+	pVtx[0].pos.z = 1.0f;
+	pVtx[1].pos.z = 1.0f;
+	pVtx[2].pos.z = 1.0f;
+	pVtx[3].pos.z = 1.0f;
+
 	g_pVtxBuffBg->Unlock();
 }
 

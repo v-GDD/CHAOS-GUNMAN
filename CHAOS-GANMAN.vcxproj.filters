@@ -126,6 +126,9 @@
     <ClCompile Include="result.cpp">
       <Filter>ソース ファイル\Mode\Result</Filter>
     </ClCompile>
+    <ClCompile Include="skybox.cpp">
+      <Filter>ソース ファイル\Mode\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="2Dpolygon.h">
@@ -179,5 +182,13 @@
     <ClInclude Include="result.h">
       <Filter>ヘッダー ファイル\Mode\Result</Filter>
     </ClInclude>
+    <ClInclude Include="skybox.h">
+      <Filter>ヘッダー ファイル\Mode\Game</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="skybox.fx">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

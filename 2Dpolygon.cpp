@@ -9,6 +9,9 @@
 //**********************************************************************************
 #include "2Dpolygon.h"
 #include "Texture.h"
+#include "mathUtil.h"
+
+using namespace MyMathUtil;
 
 //*************************************************************************************************
 //*** マクロ定義 ***
@@ -77,19 +80,12 @@ void Draw2DPolygon(void)
 	{
 		if (p2DPoly->bUse == true)
 		{
-			/*** 頂点バッファをデータストリームに設定 ***/
-			pDevice->SetStreamSource(0, p2DPoly->pVtxBuff, 0, sizeof(VERTEX_2D));
-
-			/*** 頂点フォーマットの設定 ***/
-			pDevice->SetFVF(FVF_VERTEX_2D);
-
-			/*** テクスチャの設定 ***/
-			pDevice->SetTexture(0, GetTexture(p2DPoly->nIdTexture));
-
-			/*** ポリゴンの描画 ***/
-			pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP,		// プリミティブの種類
-				0,											// 描画する最初の頂点インデックス
-				2);											// 描画するプリミティブの数
+			DrawPolygonTextureFromIndex(pDevice,
+				p2DPoly->pVtxBuff,
+				p2DPoly->nIdTexture,
+				sizeof(VERTEX_2D),
+				FVF_VERTEX_2D,
+				1);
 		}
 	}
 
@@ -121,7 +117,7 @@ int Set2DPolygon(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR2 size, int nIdText
 				/*** 頂点バッファの生成 ***/
 				pDevice->CreateVertexBuffer(sizeof(VERTEX_2D) * 4,
 					D3DUSAGE_WRITEONLY,
-					FVF_VERTEX_3D,
+					FVF_VERTEX_2D,
 					D3DPOOL_MANAGED,
 					&p2DPoly->pVtxBuff,
 					NULL);
@@ -131,39 +127,16 @@ int Set2DPolygon(D3DXVECTOR3 pos, D3DXVECTOR3 rot, D3DXVECTOR2 size, int nIdText
 			p2DPoly->pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
 
 			/*** 頂点座標の設定 ***/
-			pVtx[0].pos.x = pos.x - (size.x * 0.5f);
-			pVtx[0].pos.y = pos.y - (size.y * 0.5f);
-			pVtx[0].pos.z = 0.0f;
-
-			pVtx[1].pos.x = pos.x + (size.x * 0.5f);
-			pVtx[1].pos.y = pos.y - (size.y * 0.5f);
-			pVtx[1].pos.z = 0.0f;
-
-			pVtx[2].pos.x = pos.x - (size.x * 0.5f);
-			pVtx[2].pos.y = pos.y + (size.y * 0.5f);
-			pVtx[2].pos.z = 0.0f;
-
-			pVtx[3].pos.x = pos.x + (size.x * 0.5f);
-			pVtx[3].pos.y = pos.y + (size.y * 0.5f);
-			pVtx[3].pos.z = 0.0f;
+			SetPolygonPos(pVtx, pos, size);
 
 			/*** 座標変換用係数の設定 ***/
-			pVtx[0].rhw = 1.0f;
-			pVtx[1].rhw = 1.0f;
-			pVtx[2].rhw = 1.0f;
-			pVtx[3].rhw = 1.0f;
+			SetPolygonRHW(pVtx);
 
 			/*** 頂点カラー設定 ***/
-			pVtx[0].col = D3DXCOLOR_NULL;
-			pVtx[1].col = D3DXCOLOR_NULL;
-			pVtx[2].col = D3DXCOLOR_NULL;
-			pVtx[3].col = D3DXCOLOR_NULL;
+			SetDefaultColor<VERTEX_2D>(pVtx);
 
 			/*** テクスチャ座標の設定 ***/
-			pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
-			pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
-			pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
-			pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+			SetDefaultTexture<VERTEX_2D>(pVtx);
 
 			/*** 頂点バッファの設定を終了 ***/
 			p2DPoly->pVtxBuff->Unlock();
@@ -194,21 +167,7 @@ void SetPosition2DPolygon(int nId2DPolygon, D3DXVECTOR3 pos)
 	p2DPoly->pVtxBuff->Lock(0, 0, (void**)&pVtx, 0);
 
 	/*** 頂点座標の設定 ***/
-	pVtx[0].pos.x = pos.x - (p2DPoly->fWidth * 0.5f);
-	pVtx[0].pos.y = pos.y - (p2DPoly->fSize * 0.5f);
-	pVtx[0].pos.z = 0.0f;
-
-	pVtx[1].pos.x = pos.x + (p2DPoly->fWidth * 0.5f);
-	pVtx[1].pos.y = pos.y - (p2DPoly->fSize * 0.5f);
-	pVtx[1].pos.z = 0.0f;
-
-	pVtx[2].pos.x = pos.x - (p2DPoly->fWidth * 0.5f);
-	pVtx[2].pos.y = pos.y + (p2DPoly->fSize * 0.5f);
-	pVtx[2].pos.z = 0.0f;
-
-	pVtx[3].pos.x = pos.x + (p2DPoly->fWidth * 0.5f);
-	pVtx[3].pos.y = pos.y + (p2DPoly->fSize * 0.5f);
-	pVtx[3].pos.z = 0.0f;
+	SetPolygonPos(pVtx, pos, D3DXVECTOR2(p2DPoly->fWidth, p2DPoly->fSize));
 
 	/*** 頂点バッファの設定を終了 ***/
 	p2DPoly->pVtxBuff->Unlock();

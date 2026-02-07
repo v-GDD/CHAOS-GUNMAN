@@ -158,6 +158,7 @@
     <ClCompile Include="mathUtil.cpp" />
     <ClCompile Include="mode.cpp" />
     <ClCompile Include="result.cpp" />
+    <ClCompile Include="skybox.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="thread.cpp" />
     <ClCompile Include="title.cpp" />
@@ -177,10 +178,19 @@
     <ClInclude Include="mathUtil.h" />
     <ClInclude Include="mode.h" />
     <ClInclude Include="result.h" />
+    <ClInclude Include="skybox.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="thread.h" />
     <ClInclude Include="title.h" />
     <ClInclude Include="modeldata.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="skybox.fx">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
