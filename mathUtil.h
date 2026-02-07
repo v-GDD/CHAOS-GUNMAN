@@ -35,7 +35,7 @@
 
 //----------------------------------------------------------------------------------
 /*** フラグ関連 ***/
-		
+#define END_SHADER				(0xffffffff)						// シェーダーの終了コード
 //----------------------------------------------------------------------------------
 
 namespace MyMathUtil
@@ -214,11 +214,22 @@ namespace MyMathUtil
 	//----------------------------------------------------------------------------------
 
 	//----------------------------------------------------------------------------------
+	/*** シェーダー関連 ***/
+	void SetSheder(_In_ LPD3DXEFFECT pEffect,
+		_In_ const char *TechniqueName,
+		_In_ UINT Pass);
+
+	void RemovePass(_In_ LPD3DXEFFECT pEffect,
+		_In_ UINT NextPass = END_SHADER);
+	//----------------------------------------------------------------------------------
+
+	//----------------------------------------------------------------------------------
 	/*** システム関連 ***/
 	HRESULT CheckIndex(int TargetIndexMax, int Index, int TargetIndexMin = NULL);
 	bool CheckPath(_In_ const char* pFileName);
 	char *UniteChar(char* pOut, const char* fmt, ...);
 	int GenerateMessageBox(_In_ UINT nType, _In_ const char* pCaption, _In_ const char* fmt, ...);
+	char *GetErrorMessage(_In_ HRESULT hr, char *pOut, size_t size, bool bPopupMessageBox);
 	//----------------------------------------------------------------------------------
 }
 

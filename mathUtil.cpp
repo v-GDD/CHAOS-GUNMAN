@@ -1331,6 +1331,9 @@ void MyMathUtil::Draw3DModelFromModelData(_In_ LPDIRECT3DDEVICE9 pDevice,
 		if (pMtxShadow != nullptr)
 		{ // シャドウマトリックスが付与されていた場合、影に設定
 			shadowMat.Diffuse = { 0, 0, 0, 1 };
+			shadowMat.Ambient = { 0, 0, 0, 1 };
+			shadowMat.Emissive = { 0, 0, 0, 1 };
+			shadowMat.Specular = { 0, 0, 0, 1 };
 		}
 
 		/*** マテリアルの設定 ***/
@@ -1549,4 +1552,80 @@ void MyMathUtil::CleanUpPixelFog(void)
 
 	// Enable fog blending.
 	pDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
+}
+
+//==================================================================================
+// --- エラーコード変換 ---
+//==================================================================================
+char *MyMathUtil::GetErrorMessage(_In_ HRESULT hr, char *pOut, size_t size, bool bPopupMessageBox)
+{
+	if (pOut == nullptr) return nullptr;
+
+	LPVOID* errorString;		// エラー文取得用
+
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER					// テキストのメモリ割り当てを要求する
+		| FORMAT_MESSAGE_FROM_SYSTEM					// エラーメッセージはWindowsが用意しているものを使用
+		| FORMAT_MESSAGE_IGNORE_INSERTS,				// 次の引数を無視してエラーコードに対するエラーメッセージを作成する
+		NULL,
+		hr,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),		// 言語を指定
+		(LPTSTR)&errorString,							// メッセージテキストが保存されるバッファへのポインタ
+		0,
+		NULL);
+
+	if (errorString != nullptr)
+	{
+		// 文字列を格納
+		strcpy_s(pOut, size, (LPCSTR)errorString);
+
+		if (bPopupMessageBox == true)
+		{
+			MyMathUtil::GenerateMessageBox(MB_ICONERROR,
+				"Error!",
+				(LPCTSTR)errorString);
+		}
+
+		LocalFree(errorString);
+	}
+
+	return pOut;
+}
+
+//==================================================================================
+// --- シェーダーの開始 ---
+//==================================================================================
+void MyMathUtil::SetSheder(_In_ LPD3DXEFFECT pEffect,
+	_In_ const char *TechniqueName,
+	_In_ UINT Pass)
+{
+	// テクニックの設定
+	pEffect->SetTechnique(TechniqueName);
+
+	UINT Passes;
+
+	// 開始
+	pEffect->Begin(&Passes, 0);
+
+	// パス指定
+	pEffect->BeginPass(Pass);
+}
+
+//==================================================================================
+// --- パスの終了 ---
+//==================================================================================
+void MyMathUtil::RemovePass(_In_ LPD3DXEFFECT pEffect,
+	_In_ UINT NextPass)
+{
+	// パスの終了
+	pEffect->EndPass();
+
+	if (NextPass != END_SHADER)
+	{ // 指定されていた場合、パスを開始
+		pEffect->BeginPass(NextPass);
+	}
+	else
+	{ // シェーダーの利用終了
+		pEffect->End();
+	}
 }
