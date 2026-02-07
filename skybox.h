@@ -15,6 +15,9 @@
 //**********************************************************************************
 //*** マクロ定義 ***
 //**********************************************************************************
+#define SKYBOX_CLOUD		"data\\TEXTURE\\CLOUD.dds"		// 曇り空
+#define SKYBOX_NORMAL		"data\\TEXTURE\\Skymap5.dds"	// 晴れ空
+#define SKYBOX_SPACE		"data\\TEXTURE\\Space2.dds"		// 宇宙空間
 
 //**********************************************************************************
 //*** プロトタイプ宣言 ***
@@ -24,4 +27,5 @@ void UninitSkybox(void);
 void UpdateSkybox(void);
 void DrawSkybox(void);
 
+void SetSkybox(const char *ddsFileName);
 #endif

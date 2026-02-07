@@ -16,6 +16,7 @@
 #include "light.h"
 #include "thread.h"
 #include "BackGroundManager.h"
+#include "skybox.h"
 
 //**********************************************************************************
 //*** マクロ定義 ***
@@ -50,6 +51,9 @@ void InitGame(void)
 	/*** ライトの初期化 ***/
 	InitLight();
 
+	/*** スカイボックスの初期化 ***/
+	InitSkybox();
+
 	/*** Xファイルの読み込み ***/
 	int nIdxModelData;		// モデルデータへのインデックス
 	if (SUCCEEDED(LoadModelData("data/MODEL/XmasTree.x", &nIdxModelData)))
@@ -75,7 +79,10 @@ void InitGame(void)
 		viewport);
 
 	/*** 背景の設定 ***/
-	SetEnableBackGround(true);
+	SetEnableBackGround(false);
+
+	/*** スカイボックスの設定 ***/
+	SetSkybox(SKYBOX_NORMAL);
 }
 
 //==================================================================================
@@ -96,6 +103,9 @@ void UninitGame(void)
 
 	/*** ライトの終了 ***/
 	UninitLight();
+
+	/*** スカイボックスの終了 ***/
+	UninitSkybox();
 }
 
 //==================================================================================
@@ -124,6 +134,9 @@ void UpdateGame(void)
 
 	/*** ライトの更新 ***/
 	UpdateLight();
+
+	/*** スカイボックスの更新 ***/
+	UpdateSkybox();
 }
 
 //==================================================================================
@@ -139,6 +152,9 @@ void DrawGame(void)
 
 		// VERTEX_3D ============================================
 		/*** Aの描画 ***/
+
+		/*** スカイボックスの描画 ***/
+		DrawSkybox();
 
 		/*** 3Dモデルの描画 ***/
 		Draw3DModel();

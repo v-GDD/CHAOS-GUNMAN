@@ -186,9 +186,4 @@
       <Filter>ヘッダー ファイル\Mode\Game</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="skybox.fx">
-      <Filter>リソース ファイル</Filter>
-    </FxCompile>
-  </ItemGroup>
 </Project>
