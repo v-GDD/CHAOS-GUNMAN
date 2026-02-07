@@ -102,6 +102,35 @@ namespace MyMathUtil
 	/*** 頂点情報関連 ***/
 	void RollPolygon(VERTEX_2D* pVtx, D3DXVECTOR3 pos, float fWidth, float fHeight, float fRot, int nSpeed);
 	void SetFullScreenPolygon(VERTEX_2D* pVtx);
+	void SetPolygonSize(VERTEX_3D* pVtx, D3DXVECTOR2 size, bool bY);
+	void SetPolygonPos(VERTEX_2D* pVtx, D3DXVECTOR3 pos, D3DXVECTOR2 size);
+
+	// テクスチャ設定
+	template<typename VERTEX>
+	void SetDefaultTexture(VERTEX* pVtx)
+	{
+		if (pVtx == nullptr) return;
+
+		pVtx[0].tex = D3DXVECTOR2(0.0f, 0.0f);
+		pVtx[1].tex = D3DXVECTOR2(1.0f, 0.0f);
+		pVtx[2].tex = D3DXVECTOR2(0.0f, 1.0f);
+		pVtx[3].tex = D3DXVECTOR2(1.0f, 1.0f);
+	}
+
+	// 色設定
+	template<typename VERTEX>
+	void SetDefaultColor(VERTEX* pVtx, D3DXCOLOR col = D3DXCOLOR_NULL)
+	{
+		if (pVtx == nullptr) return;
+
+		pVtx[0].col = col;
+		pVtx[1].col = col;
+		pVtx[2].col = col;
+		pVtx[3].col = col;
+	}
+
+	void SetPolygonNormal(VERTEX_3D* pVtx, D3DXVECTOR3 nor);
+	void SetPolygonRHW(VERTEX_2D* pVtx);
 	//----------------------------------------------------------------------------------
 
 	//----------------------------------------------------------------------------------
@@ -158,17 +187,17 @@ namespace MyMathUtil
 #endif
 #pragma pop_macro("NULL")
 
-	void CalcWorldMatrix(_Inout_ D3DXMATRIX *pMtxWorld,
+	D3DXMATRIX *CalcWorldMatrix(_Inout_ D3DXMATRIX *pMtxWorld,
 		_In_ D3DXVECTOR3 pos,
 		_In_ D3DXVECTOR3 rot);
 
-	void CalcWorldMatrixFromParent(_Inout_ D3DXMATRIX *pMtxWorld,
+	D3DXMATRIX *CalcWorldMatrixFromParent(_Inout_ D3DXMATRIX *pMtxWorld,
 		_In_ const D3DXMATRIX *pMtxParent,
 		_In_ D3DXVECTOR3 pos,
 		_In_ D3DXVECTOR3 rot);
 
-	void CreateShadowMatrix(_In_ LPDIRECT3DDEVICE9 pDevice,
-		_In_ const D3DXMATRIX* pIn, 
+	D3DXMATRIX *CreateShadowMatrix(_In_ LPDIRECT3DDEVICE9 pDevice,
+		_In_ const D3DXMATRIX *pMtxWorld,
 		_In_ D3DXVECTOR3 pos,
 		_In_ D3DXVECTOR3 nor,
 		_In_ UINT nIdxLight,
@@ -188,7 +217,7 @@ namespace MyMathUtil
 	/*** システム関連 ***/
 	HRESULT CheckIndex(int TargetIndexMax, int Index, int TargetIndexMin = NULL);
 	bool CheckPath(_In_ const char* pFileName);
-	void UniteChar(char* pOut, const char* fmt, ...);
+	char *UniteChar(char* pOut, const char* fmt, ...);
 	int GenerateMessageBox(_In_ UINT nType, _In_ const char* pCaption, _In_ const char* fmt, ...);
 	//----------------------------------------------------------------------------------
 }

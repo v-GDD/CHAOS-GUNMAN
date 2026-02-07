@@ -413,6 +413,103 @@ void MyMathUtil::SetFullScreenPolygon(VERTEX_2D* pVtx)
 }
 
 //==================================================================
+// --- ポリゴンの法線を設定する処理 ---
+//==================================================================
+void MyMathUtil::SetPolygonNormal(VERTEX_3D* pVtx, D3DXVECTOR3 nor)
+{
+	if (pVtx == nullptr) return;
+
+	pVtx[0].nor = nor;
+	pVtx[1].nor = nor;
+	pVtx[2].nor = nor;
+	pVtx[3].nor = nor;
+}
+
+//==================================================================
+// --- ポリゴンのRHWを設定する処理 ---
+//==================================================================
+void MyMathUtil::SetPolygonRHW(VERTEX_2D* pVtx)
+{
+	if (pVtx == nullptr) return;
+
+	pVtx[0].rhw = 1.0f;
+	pVtx[1].rhw = 1.0f;
+	pVtx[2].rhw = 1.0f;
+	pVtx[3].rhw = 1.0f;
+}
+
+//==================================================================
+// --- ポリゴンの位置を設定する処理 ---
+//==================================================================
+void MyMathUtil::SetPolygonSize(VERTEX_3D* pVtx, D3DXVECTOR2 size, bool bY)
+{
+	if (pVtx == nullptr) return;
+
+	if (bY)
+	{
+		/*** 頂点座標の設定の設定 ***/
+		pVtx[0].pos.x = -size.x * 0.5f;
+		pVtx[0].pos.y = size.y * 0.5f;
+		pVtx[0].pos.z = 0.0f;
+
+		pVtx[1].pos.x = size.x * 0.5f;
+		pVtx[1].pos.y = size.y * 0.5f;
+		pVtx[1].pos.z = 0.0f;
+
+		pVtx[2].pos.x = -size.x * 0.5f;
+		pVtx[2].pos.y = -size.y * 0.5f;
+		pVtx[2].pos.z = 0.0f;
+
+		pVtx[3].pos.x = size.x * 0.5f;
+		pVtx[3].pos.y = -size.y * 0.5f;
+		pVtx[3].pos.z = 0.0f;
+	}
+	else
+	{
+		/*** 頂点座標の設定の設定 ***/
+		pVtx[0].pos.x = -size.x * 0.5f;
+		pVtx[0].pos.y = 0.0f;
+		pVtx[0].pos.z = size.y * 0.5f;
+
+		pVtx[1].pos.x = size.x * 0.5f;
+		pVtx[1].pos.y = 0.0f;
+		pVtx[1].pos.z = size.y * 0.5f;
+
+		pVtx[2].pos.x = -size.x * 0.5f;
+		pVtx[2].pos.y = 0.0f;
+		pVtx[2].pos.z = -size.y * 0.5f;
+
+		pVtx[3].pos.x = size.y * 0.5f;
+		pVtx[3].pos.y = 0.0f;
+		pVtx[3].pos.z = -size.y * 0.5f;
+	}
+}
+
+//==================================================================
+// --- ポリゴンの位置を設定する処理 ---
+//==================================================================
+void MyMathUtil::SetPolygonPos(VERTEX_2D* pVtx, D3DXVECTOR3 pos, D3DXVECTOR2 size)
+{
+	if (pVtx == nullptr) return;
+
+	pVtx[0].pos.x = pos.x - (size.x * 0.5f);
+	pVtx[0].pos.y = pos.y - (size.y * 0.5f);
+	pVtx[0].pos.z = 0.0f;
+
+	pVtx[1].pos.x = pos.x + (size.x * 0.5f);
+	pVtx[1].pos.y = pos.y - (size.y * 0.5f);
+	pVtx[1].pos.z = 0.0f;
+
+	pVtx[2].pos.x = pos.x - (size.x * 0.5f);
+	pVtx[2].pos.y = pos.y + (size.y * 0.5f);
+	pVtx[2].pos.z = 0.0f;
+
+	pVtx[3].pos.x = pos.x + (size.x * 0.5f);
+	pVtx[3].pos.y = pos.y + (size.y * 0.5f);
+	pVtx[3].pos.z = 0.0f;
+}
+
+//==================================================================
 // --- 360°をD3DXVECTOR3のRadianに変換する処理 ---
 //==================================================================
 D3DXVECTOR3 MyMathUtil::DegreeToRadian(D3DXVECTOR3 degree)
@@ -549,7 +646,7 @@ bool MyMathUtil::CheckPath(_In_ const char *pFileName)
 //==================================================================
 // --- 書式付き文字列設定処理 ---
 //==================================================================
-void MyMathUtil::UniteChar(char* pOut, const char* fmt, ...)
+char *MyMathUtil::UniteChar(char* pOut, const char* fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
@@ -737,6 +834,8 @@ void MyMathUtil::UniteChar(char* pOut, const char* fmt, ...)
 	strcat(&aStrOut[0], aStrEnd);
 
 	strcpy(pOut, &aStrOut[0]);
+
+	return pOut;
 }
 
 //==================================================================
@@ -1235,7 +1334,7 @@ void MyMathUtil::Draw3DModelFromModelData(_In_ LPDIRECT3DDEVICE9 pDevice,
 		}
 
 		/*** マテリアルの設定 ***/
-		pDevice->SetMaterial(&pMat[nCntMat].MatD3D);
+		pDevice->SetMaterial(&shadowMat);
 
 		/*** テクスチャの設定 ***/
 		pDevice->SetTexture(0, pModelData->apTexture[nCntMat]);
@@ -1252,10 +1351,17 @@ void MyMathUtil::Draw3DModelFromModelData(_In_ LPDIRECT3DDEVICE9 pDevice,
 //==================================================================================
 // --- マトリックス計算 ---
 //==================================================================================
-void MyMathUtil::CalcWorldMatrix(_Inout_ D3DXMATRIX *pMtxWorld,
+D3DXMATRIX *MyMathUtil::CalcWorldMatrix(_Inout_ D3DXMATRIX *pMtxWorld,
 	_In_ D3DXVECTOR3 pos,
 	_In_ D3DXVECTOR3 rot)
 {
+	// NULLCHECK
+	if (pMtxWorld == nullptr)
+	{
+		OutputDebugString(TEXT("pMtxWorldが設定されていませんよ！"));
+		return nullptr;
+	}
+
 	D3DXMATRIX mtxRot, mtxTrans;		// 計算用マトリックス
 
 	/*** ワールドマトリックスの初期化 ***/
@@ -1276,16 +1382,32 @@ void MyMathUtil::CalcWorldMatrix(_Inout_ D3DXMATRIX *pMtxWorld,
 		pos.z);
 
 	D3DXMatrixMultiply(pMtxWorld, pMtxWorld, &mtxTrans);
+
+	return pMtxWorld;
 }
 
 //==================================================================================
 // --- マトリックス計算 (親マトリックス使用) ---
 //==================================================================================
-void MyMathUtil::CalcWorldMatrixFromParent(_Inout_ D3DXMATRIX *pMtxWorld,
+D3DXMATRIX *MyMathUtil::CalcWorldMatrixFromParent(_Inout_ D3DXMATRIX *pMtxWorld,
 	_In_ const D3DXMATRIX *pMtxParent,
 	_In_ D3DXVECTOR3 pos,
 	_In_ D3DXVECTOR3 rot)
 {
+	// NULLCHECK
+	if (pMtxWorld == nullptr)
+	{
+		OutputDebugString(TEXT("pMtxWorldが設定されていませんよ！"));
+		return nullptr;
+	}
+
+	// NULLCHECK
+	if (pMtxParent == nullptr)
+	{
+		OutputDebugString(TEXT("pMtxParentが設定されていませんよ！"));
+		return nullptr;
+	}
+
 	D3DXMATRIX mtxRot, mtxTrans;	// 計算用マトリックス
 
 	// パーツのワールドマトリックス初期化
@@ -1317,13 +1439,15 @@ void MyMathUtil::CalcWorldMatrixFromParent(_Inout_ D3DXMATRIX *pMtxWorld,
 	D3DXMatrixMultiply(pMtxWorld,
 		pMtxWorld,
 		pMtxParent);
+
+	return pMtxWorld;
 }
 
 //==================================================================================
 // ---シャドウマトリックスの作成処理 ---
 //==================================================================================
-void MyMathUtil::CreateShadowMatrix(_In_ LPDIRECT3DDEVICE9 pDevice, 
-	_In_ const D3DXMATRIX *pIn,
+D3DXMATRIX *MyMathUtil::CreateShadowMatrix(_In_ LPDIRECT3DDEVICE9 pDevice,
+	_In_ const D3DXMATRIX *pMtxWorld,
 	_In_ D3DXVECTOR3 pos,
 	_In_ D3DXVECTOR3 nor,
 	_In_ UINT nIdxLight,
@@ -1333,19 +1457,19 @@ void MyMathUtil::CreateShadowMatrix(_In_ LPDIRECT3DDEVICE9 pDevice,
 	if (pDevice == nullptr)
 	{
 		OutputDebugString(TEXT("pDeviceが設定されていませんよ！"));
-		return;
+		return nullptr;
 	}
 
-	if (pIn == nullptr)
+	if (pMtxWorld == nullptr)
 	{
-		OutputDebugString(TEXT("pInが設定されていませんよ！"));
-		return;
+		OutputDebugString(TEXT("pMtxWorldが設定されていませんよ！"));
+		return nullptr;
 	}
 
 	if (pOut == nullptr)
 	{
 		OutputDebugString(TEXT("pOutが設定されていませんよ！"));
-		return;
+		return nullptr;
 	}
 
 	D3DLIGHT9 light;
@@ -1364,7 +1488,9 @@ void MyMathUtil::CreateShadowMatrix(_In_ LPDIRECT3DDEVICE9 pDevice,
 
 	// シャドウマトリックスの作成
 	D3DXMatrixShadow(pOut, &LightPos, &plane);
-	D3DXMatrixMultiply(pOut, pIn, pOut);
+	D3DXMatrixMultiply(pOut, pMtxWorld, pOut);
+
+	return pOut;
 }
 
 //==================================================================================

@@ -75,7 +75,7 @@ void InitGame(void)
 		viewport);
 
 	/*** îwåiÇÃê›íË ***/
-	SetEnableBackGround(false);
+	SetEnableBackGround(true);
 }
 
 //==================================================================================
